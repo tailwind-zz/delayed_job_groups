@@ -3,8 +3,7 @@ $:.unshift(File.dirname(__FILE__) + '/../lib')
 require 'rubygems'
 require 'bundler/setup'
 require 'logger'
-
-
+require 'ruby-debug'
 
 ENV['RAILS_ENV'] = 'test'
 require 'rails'

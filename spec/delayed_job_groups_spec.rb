@@ -104,6 +104,21 @@ describe Delayed::Job do
       Delayed::Job.ready_to_run(WORKER, MAX_RUN_TIME).count.should == 1
     end
   end
+
+  context "with 2 jobs in the same group (one timed out), from methods declared as asynchronous, one unlocked and 1 job in a different group" do
+    before do
+      2.times do
+        User.create(:role => "admin").send_welcome_email
+      end
+      1.times{ Delayed::Job.enqueue GroupedJob.new(:repository => "repo2") }      
+      Delayed::Job.first.lock_exclusively!(MAX_RUN_TIME, WORKER)
+      Delayed::Job.first.update_attributes :locked_at => (Time.now - MAX_RUN_TIME.days)
+    end
+    
+    it "should find all jobs are available to run" do
+      Delayed::Job.ready_to_run(WORKER, MAX_RUN_TIME).count.should == 3
+    end
+  end
   
   context "with 2 jobs in the same group, from delay() calls, one unlocked and 1 job in a different group" do
     before do
@@ -118,5 +133,20 @@ describe Delayed::Job do
     it "should find no jobs that are ready to run" do
       Delayed::Job.ready_to_run(WORKER, MAX_RUN_TIME).count.should == 1
     end
-  end  
+  end
+
+  context "with 2 jobs in the same group (one timed out), from delay() calls, one unlocked and 1 job in a different group" do
+    before do
+      2.times do
+        User.create(:role => "admin").delay.expensive_operation
+      end
+      1.times{ Delayed::Job.enqueue GroupedJob.new(:repository => "repo2") }      
+      Delayed::Job.first.lock_exclusively!(MAX_RUN_TIME, WORKER)
+      Delayed::Job.first.update_attributes :locked_at => (Time.now - MAX_RUN_TIME.days)
+    end
+    
+    it "should find all jobs are available to run" do
+      Delayed::Job.ready_to_run(WORKER, MAX_RUN_TIME).count.should == 3
+    end
+  end 
 end
