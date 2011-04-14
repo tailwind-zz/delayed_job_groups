@@ -140,9 +140,9 @@ describe Delayed::Job do
       2.times do
         User.create(:role => "admin").delay.expensive_operation
       end
-      1.times{ Delayed::Job.enqueue GroupedJob.new(:repository => "repo2") }      
-      Delayed::Job.first.lock_exclusively!(MAX_RUN_TIME, WORKER)
-      Delayed::Job.first.update_attributes :locked_at => (Time.now - MAX_RUN_TIME.days)
+      1.times{ Delayed::Job.enqueue GroupedJob.new(:repository => "repo2") }
+			Delayed::Job.first.lock_exclusively!(MAX_RUN_TIME, WORKER)
+			Delayed::Job.first.update_attributes :locked_at => (Time.now - MAX_RUN_TIME.days)
     end
     
     it "should find all jobs are available to run" do
