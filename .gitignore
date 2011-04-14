@@ -1,3 +1,4 @@
+.rvmrc
 delayed_job.sqlite3
 *.swp
 *.swo
